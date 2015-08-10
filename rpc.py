@@ -16,7 +16,6 @@ import xbee
 __author__ = "Takashi Ando"
 __copyright__ = "Copyright 2015, My own project"
 __license__ = "GPL"
-__version__ = "1.0.0"
 
 
 def init_args(argv=sys.argv[1:]):
