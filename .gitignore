@@ -1,4 +1,8 @@
 bin
+build
 include
 lib
+dist
+rpwc.egg-info
+pip-selfcheck.json
 *.pyc
