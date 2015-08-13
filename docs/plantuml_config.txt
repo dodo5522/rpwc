@@ -1,0 +1,3 @@
+skinparam backgroundColor #EEEBDC
+skinparam classAttributeIconSize 0
+skinparam componentStyle uml2
