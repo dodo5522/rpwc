@@ -50,14 +50,10 @@ class Main(object):
         self.frame_id = 0
         self.e = Event()
 
+    def __call__(self, *args, **kwargs):
         self.ser = serial.Serial(self.parsed_args.serial_port, self.parsed_args.serial_baurate)
         self.bee = xbee.ZigBee(self.ser, escaped=True, callback=self.__on_remote_command_done)
 
-    def __del__(self):
-        self.bee.halt()
-        self.ser.close()
-
-    def __call__(self, *args, **kwargs):
         # FIXME: command against pin number and paramter means high/low level
         self.__put_remote_command("P0", 0x05)
 
@@ -66,6 +62,9 @@ class Main(object):
 
         # FIXME: command against pin number and paramter means high/low level
         self.__put_remote_command("P0", 0x04)
+
+        self.bee.halt()
+        self.ser.close()
 
     def __put_remote_command(self, command, param):
         """ Put remote AT command to xbee client.
