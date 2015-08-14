@@ -81,6 +81,9 @@ class RemotePowerController(object):
         """ Callback function which is called when xbee remote_at command
             finished. """
 
+        # {'status': b'\x00', 'source_addr': b'%Y',
+        #  'source_addr_long': b'\x00\x13\xa2\x00@\xaf\xbc\xce',
+        #  'frame_id': b'\x01', 'command': b'P0', 'id': 'remote_at_response'}
         print(read_frame)
         self.e.set()
 
