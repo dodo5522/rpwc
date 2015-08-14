@@ -17,8 +17,8 @@ __copyright__ = "Copyright 2015, My own project"
 __license__ = "GPL"
 
 
-class Main(object):
-    """ main routine class """
+class RemotePowerController(object):
+    """ Main routine class for power control. """
 
     def __init__(self):
         self.frame_id = 0
@@ -104,5 +104,5 @@ if __name__ == "__main__":
     parsed_args = parser.parse_args()
     kwargs = {key: value for key, value in parsed_args._get_kwargs()}
 
-    main = Main()
+    main = RemotePowerController()
     main(**kwargs)
