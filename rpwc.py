@@ -24,13 +24,14 @@ class RemotePowerController(object):
         self.frame_id = 0
         self.e = Event()
 
-    def __call__(self, serial_port, serial_baurate, dest_addr_long):
+    def __call__(self, serial_port, serial_baurate, dest_addr_long, interval):
         """ Press and release power button.
 
         Args:
             serial_port     string for serial port like "/dev/tty1"
             serial_baurate  serial baurate as integer
             dest_addr_long  destination address of xbee as int
+            interval        interval time between press nad release
 
         Returns:
             None but raise error event if some error.
@@ -42,8 +43,7 @@ class RemotePowerController(object):
         # FIXME: command against pin number and paramter means high/low level
         self.__put_remote_command(dest_addr_long, "P0", 0x05)
 
-        # FIXME: wait time will be set by argument
-        time.sleep(1)
+        time.sleep(interval)
 
         # FIXME: command against pin number and paramter means high/low level
         self.__put_remote_command(dest_addr_long, "P0", 0x04)
@@ -112,6 +112,12 @@ if __name__ == "__main__":
         metavar="N",
         type=int,
         default=9600)
+    parser.add_argument(
+        "-i", "--interval",
+        help="interval time between press and release of power buton",
+        metavar="I",
+        type=int,
+        default=1)
 
     parsed_args = parser.parse_args()
     kwargs = {key: value for key, value in parsed_args._get_kwargs()}
