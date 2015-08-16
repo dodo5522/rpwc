@@ -5,10 +5,8 @@
         <link rel="stylesheet" href="{{ static_url("style.css") }}"/>
     </head>
     <body>
-        <div id="container">
-            <div id="main">
-                <p>{{len_body}}</p>
-            </div>
-        </div>
+        {% for result in results %}
+        {{ escape(result) }}<br>
+        {% end %}
     </body>
 </html>
