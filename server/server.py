@@ -26,6 +26,7 @@ class RequestHandler(web.RequestHandler):
         kwargs["dest_addr_long"] = 0x0013A20040AFBCCE
         kwargs["serial_port"] = "/dev/ttyAMA0"
         kwargs["serial_baurate"] = 9600
+        kwargs["interval"] = 1
 
         main = rpwc.RemotePowerController()
         main(**kwargs)
