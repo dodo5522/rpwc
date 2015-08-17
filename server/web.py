@@ -12,12 +12,17 @@ __author__ = "Takashi Ando"
 __copyright__ = "Copyright 2015, My own project"
 
 
+class ApiHandler(web.RequestHandler):
+    def get(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def post(self, *args, **kwargs):
+        raise NotImplementedError
+
 class MainHandler(web.RequestHandler):
     def get(self):
         self.render("index.html")
 
-
-class RequestHandler(web.RequestHandler):
     def post(self, *args, **kwargs):
         results = []
         api = args[0]
@@ -37,10 +42,12 @@ class RequestHandler(web.RequestHandler):
         self.render("result.html", results=results)
 
 if __name__ == "__main__":
+    path_here = os.path.dirname(os.path.abspath(__file__))
+
     application = web.Application(
-        [(r"/", MainHandler), (r"/api/(.+)", RequestHandler), ],
-        template_path=os.path.join(os.getcwd(), "templates"),
-        static_path=os.path.join(os.getcwd(), "static"))
+        [(r"/", MainHandler), (r"/api/(.+)", ApiHandler), ],
+        template_path=os.path.join(path_here, "templates"),
+        static_path=os.path.join(path_here, "static"))
 
     application.listen(8888)
     print("Server is up....")
