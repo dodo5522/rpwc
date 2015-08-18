@@ -19,21 +19,26 @@ class MainHandler(web.RequestHandler):
     def post(self, *args, **kwargs):
         self.render("index.html", disabled="disabled", result="")
 
-        results = []
         push_range = self.get_argument("push_range")
 
         kwargs["dest_addr_long"] = 0x0013A20040AFBCCE
         kwargs["serial_port"] = "/dev/ttyAMA0"
         kwargs["serial_baurate"] = 9600
         kwargs["interval"] = 1 if push_range == "long" else 1
+        kwargs["callback"] = self.__on_remote_command_done
 
         pushPowerButton = rpwc.RemotePowerController()
         pushPowerButton(**kwargs)
 
-        results.append("push range is " + push_range)
-        results.append("command result is " + "...")
+    def __on_remote_command_done(self, read_frame):
+        """ Callback function which is called when xbee remote_at command
+            finished. """
 
-        self.render("index.html", disabled="", result="\n".join(results))
+        # {'status': b'\x00', 'source_addr': b'%Y',
+        #  'source_addr_long': b'\x00\x13\xa2\x00@\xaf\xbc\xce',
+        #  'frame_id': b'\x01', 'command': b'P0', 'id': 'remote_at_response'}
+        self.render("index.html", disabled="", result=str(read_frame))
+        self.set_event()
 
 
 class ApiHandler(web.RequestHandler):

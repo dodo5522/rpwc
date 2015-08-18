@@ -24,7 +24,8 @@ class RemotePowerController(object):
         self.frame_id = 0
         self.e = Event()
 
-    def __call__(self, serial_port, serial_baurate, dest_addr_long, interval):
+    def __call__(self, serial_port, serial_baurate, dest_addr_long, interval,
+                 callback=None):
         """ Press and release power button.
 
         Args:
@@ -32,13 +33,16 @@ class RemotePowerController(object):
             serial_baurate  serial baurate as integer
             dest_addr_long  destination address of xbee as int
             interval        interval time between press nad release
+            callback        callable object to get response from remote xbee
 
         Returns:
             None but raise error event if some error.
         """
         self.ser = serial.Serial(serial_port, serial_baurate)
-        self.bee = xbee.ZigBee(self.ser, escaped=True,
-                               callback=self.__on_remote_command_done)
+        self.bee = xbee.ZigBee(
+            self.ser, escaped=True,
+            callback=self.__on_remote_command_done
+            if callback is None else callback)
 
         # FIXME: command against pin number and paramter means high/low level
         self.__put_remote_command(dest_addr_long, "P0", 0x05)
@@ -64,7 +68,7 @@ class RemotePowerController(object):
             None but raise error event if some error.
         """
 
-        self.e.clear()
+        self.clear_event()
 
         self.frame_id = self.frame_id + 1 if self.frame_id < 256 else 1
 
@@ -74,7 +78,7 @@ class RemotePowerController(object):
             frame_id=int(self.frame_id).to_bytes(1, byteorder="big"),
             parameter=int(param).to_bytes(1, byteorder="big"))
 
-        if self.e.wait(timeout=1) is not True:
+        if self.wait_event(timeout=1) is not True:
             raise TimeoutError("AT command timeout error")
 
     def __on_remote_command_done(self, read_frame):
@@ -85,8 +89,19 @@ class RemotePowerController(object):
         #  'source_addr_long': b'\x00\x13\xa2\x00@\xaf\xbc\xce',
         #  'frame_id': b'\x01', 'command': b'P0', 'id': 'remote_at_response'}
         print(read_frame)
+        self.set_event()
+
+    def set_event(self):
+        """ Set event to wait for getting response from remote xbee. """
         self.e.set()
 
+    def clear_event(self):
+        """ Clear event to wait for getting response from remote xbee. """
+        self.e.clear()
+
+    def wait_event(self, timeout):
+        """ Wait event for getting response from remote xbee. """
+        self.e.wait(timeout)
 
 if __name__ == "__main__":
     import argparse
