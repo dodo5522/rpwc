@@ -4,6 +4,8 @@
 """ This module is for... """
 
 import os
+import time
+import json
 import tornado.ioloop as ioloop
 import tornado.web as web
 import rpwc
@@ -13,32 +15,71 @@ __copyright__ = "Copyright 2015, My own project"
 
 
 class MainHandler(web.RequestHandler):
+    def __init__(self, *args, **kwargs):
+        web.RequestHandler.__init__(self, *args, **kwargs)
+
+        params = {}
+        params["dest_addr_long"] = 0x0013A20040AFBCCE
+        params["serial_port"] = "/dev/ttyAMA0"
+        params["serial_baurate"] = 9600
+        params["gpio_pin"] =  "P0"
+
+        self.ctrl = rpwc.RemotePowerController(**params)
+
+        self.disabled = ""
+        self.result_text = ""
+        self.results = []
+
     def get(self):
-        self.render("index.html", disabled="", result="")
+        self.render("index.html", disabled=self.disabled, result=self.result_text)
 
     def post(self, *args, **kwargs):
-        self.render("index.html", disabled="disabled", result="")
-
         push_range = self.get_argument("push_range")
+        interval = 5 if push_range == "long" else 1
 
-        kwargs["dest_addr_long"] = 0x0013A20040AFBCCE
-        kwargs["serial_port"] = "/dev/ttyAMA0"
-        kwargs["serial_baurate"] = 9600
-        kwargs["interval"] = 1 if push_range == "long" else 1
-        kwargs["callback"] = self.__on_remote_command_done
+        self.ctrl.press_power_button(
+            callback=self.__on_power_button_pressed)
 
-        pushPowerButton = rpwc.RemotePowerController()
-        pushPowerButton(**kwargs)
+        if self.ctrl.wait_for_command_done(interval) is not True:
+            raise rpwc.TimeoutError("Timeout!!!")
 
-    def __on_remote_command_done(self, read_frame):
+        # FIXME
+        time.sleep(interval)
+
+        self.ctrl.release_power_button(
+            callback=self.__on_power_button_released)
+
+        if self.ctrl.wait_for_command_done(interval) is not True:
+            raise rpwc.TimeoutError("Timeout!!!")
+
+        self.redirect("/")
+
+    def __on_power_button_pressed(self, read_frame):
         """ Callback function which is called when xbee remote_at command
             finished. """
 
         # {'status': b'\x00', 'source_addr': b'%Y',
         #  'source_addr_long': b'\x00\x13\xa2\x00@\xaf\xbc\xce',
         #  'frame_id': b'\x01', 'command': b'P0', 'id': 'remote_at_response'}
-        self.render("index.html", disabled="", result=str(read_frame))
-        self.set_event()
+        self.results.append(read_frame)
+
+        print("callback is called with " + str(read_frame))
+        self.ctrl.set_event()
+
+    def __on_power_button_released(self, read_frame):
+        """ Callback function which is called when xbee remote_at command
+            finished. """
+
+        # {'status': b'\x00', 'source_addr': b'%Y',
+        #  'source_addr_long': b'\x00\x13\xa2\x00@\xaf\xbc\xce',
+        #  'frame_id': b'\x01', 'command': b'P0', 'id': 'remote_at_response'}
+        self.results.append(read_frame)
+
+        print("callback is called with " + str(read_frame))
+        self.ctrl.set_event()
+
+        self.disabled = ""
+        self.result_text = "\n".join(str(result) for result in self.results)
 
 
 class ApiHandler(web.RequestHandler):

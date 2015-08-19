@@ -17,58 +17,83 @@ __copyright__ = "Copyright 2015, My own project"
 __license__ = "GPL"
 
 
+class TimeoutError(Exception):
+    pass
+
+
 class RemotePowerController(object):
     """ Main routine class for power control. """
+    PIN_LEVEL_HIGH = 0x05
+    PIN_LEVEL_LOW = 0x04
 
-    def __init__(self):
-        self.frame_id = 0
-        self.e = Event()
-
-    def __call__(self, serial_port, serial_baurate, dest_addr_long, interval,
-                 callback=None):
-        """ Press and release power button.
+    def __init__(self, serial_port, serial_baurate, dest_addr_long, gpio_pin, **kwargs):
+        """ Initialize object.
 
         Args:
-            serial_port     string for serial port like "/dev/tty1"
-            serial_baurate  serial baurate as integer
-            dest_addr_long  destination address of xbee as int
-            interval        interval time between press nad release
-            callback        callable object to get response from remote xbee
+            serial_port       string for serial port like "/dev/tty1"
+            serial_baurate    serial baurate as integer
+            dest_addr_long    XBee address to be controlled
+            gpio_pin          like "P0", "P1", etc.
 
         Returns:
             None but raise error event if some error.
         """
+        self.frame_id = 0
+        self.e = Event()
+
         self.ser = serial.Serial(serial_port, serial_baurate)
-        self.bee = xbee.ZigBee(
-            self.ser, escaped=True,
-            callback=self.__on_remote_command_done
-            if callback is None else callback)
 
-        # FIXME: command against pin number and paramter means high/low level
-        self.__put_remote_command(dest_addr_long, "P0", 0x05)
+        self.dest_addr_long = dest_addr_long
+        self.gpio_pin = gpio_pin
+        self.bee = None
 
-        time.sleep(interval)
+    def press_power_button(self, callback=None):
+        """ Put remote AT command as pushing power buttion. This function does
+            same operation as sending remote AT command to set high level to a
+            GPIO pin.
 
-        # FIXME: command against pin number and paramter means high/low level
-        self.__put_remote_command(dest_addr_long, "P0", 0x04)
+        Args:
+            callback    callable object to get response from remote xbee
 
-        self.bee.halt()
-        self.ser.close()
+        Returns:
+            None but raise error event if some error.
+        """
+        self.put_remote_command(
+            self.dest_addr_long, self.gpio_pin, self.PIN_LEVEL_HIGH, callback)
 
-    def __put_remote_command(self, dest_addr_long, command, param):
+    def release_power_button(self, callback=None):
+        """ Put remote AT command as releasing power buttion. This function does
+            same operation as sending remote AT command to set low level to a
+            GPIO pin.
+
+        Args:
+            callback    callable object to get response from remote xbee
+
+        Returns:
+            None but raise error event if some error.
+        """
+        self.put_remote_command(
+            self.dest_addr_long, self.gpio_pin, self.PIN_LEVEL_LOW, callback)
+
+    def put_remote_command(self, dest_addr_long, command, param, callback=None):
         """ Put remote AT command to xbee client. This function can only support
             parameter with 1 byte like pin high/low.
 
         Args:
-            dest_addr_long  destination address of xbee as int
-            command         like "P0", "P1", ...
-            param           like 0x05 which is parameter against the command.
+            dest_addr_long      destination address of xbee as int
+            command             like "P0", "P1", ...
+            param               like 0x05 which is parameter against the command.
+            callback            callable object to get response from remote xbee
 
         Returns:
             None but raise error event if some error.
         """
+        self.e.clear()
 
-        self.clear_event()
+        self.bee = xbee.ZigBee(
+            self.ser, escaped=True,
+            callback=self.__on_remote_command_done
+            if callback is None else callback)
 
         self.frame_id = self.frame_id + 1 if self.frame_id < 256 else 1
 
@@ -78,12 +103,9 @@ class RemotePowerController(object):
             frame_id=int(self.frame_id).to_bytes(1, byteorder="big"),
             parameter=int(param).to_bytes(1, byteorder="big"))
 
-        if self.wait_event(timeout=1) is not True:
-            raise TimeoutError("AT command timeout error")
-
     def __on_remote_command_done(self, read_frame):
-        """ Callback function which is called when xbee remote_at command
-            finished. """
+        """ Default callback function which is called when xbee remote_at
+            command finished. """
 
         # {'status': b'\x00', 'source_addr': b'%Y',
         #  'source_addr_long': b'\x00\x13\xa2\x00@\xaf\xbc\xce',
@@ -95,13 +117,26 @@ class RemotePowerController(object):
         """ Set event to wait for getting response from remote xbee. """
         self.e.set()
 
-    def clear_event(self):
-        """ Clear event to wait for getting response from remote xbee. """
-        self.e.clear()
+    def wait_for_command_done(self, timeout=3):
+        """ Wait event for getting response from remote xbee.
 
-    def wait_event(self, timeout):
-        """ Wait event for getting response from remote xbee. """
-        self.e.wait(timeout)
+        Args:
+            timeout     timeout value as second
+
+        Returns:
+            False if timeout.
+        """
+        ret = False
+
+        if self.e.wait(timeout) is True:
+            ret = True
+
+        if self.bee is not None:
+            self.bee.halt()
+            self.bee = None
+
+        self.e.clear()
+        return ret
 
 if __name__ == "__main__":
     import argparse
@@ -136,6 +171,17 @@ if __name__ == "__main__":
 
     parsed_args = parser.parse_args()
     kwargs = {key: value for key, value in parsed_args._get_kwargs()}
+    # FIXME:
+    kwargs["gpio_pin"] = "P0"
 
-    main = RemotePowerController()
-    main(**kwargs)
+    controller = RemotePowerController(**kwargs)
+
+    controller.press_power_button()
+    if controller.wait_for_command_done(timeout=1) is not True:
+        raise TimeoutError("Timeout!!!")
+
+    time.sleep(parsed_args.interval)
+
+    controller.release_power_button()
+    if controller.wait_for_command_done(timeout=1) is not True:
+        raise TimeoutError("Timeout!!!")
