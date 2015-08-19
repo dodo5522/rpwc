@@ -83,11 +83,12 @@ class MainHandler(web.RequestHandler):
 
 
 class ApiHandler(web.RequestHandler):
-    def get(self, *args, **kwargs):
-        raise NotImplementedError
+    def __init__(self, *args, **kwargs):
+        web.RequestHandler.__init__(self, *args, **kwargs)
 
-    def post(self, *args, **kwargs):
-        raise NotImplementedError
+    def get(self, *args, **kwargs):
+        self.set_header("Content-Type", "text/plain")
+        self.write(json.dumps({"status": "OK", "detail": "none"}))
 
 
 if __name__ == "__main__":
