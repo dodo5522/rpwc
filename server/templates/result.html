@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Remote Power Controller</title>
+        <link rel="stylesheet" href="{{ static_url("style.css") }}"/>
+    </head>
+    <body>
+        {% for result in results %}
+        {{ escape(result) }}<br>
+        {% end %}
+    </body>
+</html>

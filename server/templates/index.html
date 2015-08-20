@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Remote Power Controller</title>
+        <link rel="stylesheet" href="{{ static_url("style.css") }}"/>
+    </head>
+    <body>
+        <div>
+            <form method="post" action="/">
+                <input type="hidden" value="short" name="push_range">
+                <input class="button" type="submit" value="Power Switch (On/Off)" {{ disabled }}>
+            </form>
+            <form method="post" action="/">
+                <input type="hidden" value="long" name="push_range">
+                <input class="button" type="submit" value="Force Reset Switch" {{ disabled }}>
+            </form>
+            <p>command result:</p>
+            <textarea class="textarea" value={{ result }} name="result" placeholder="Response will be shown here." readonly></textarea>
+        </div>
+    </body>
+</html>

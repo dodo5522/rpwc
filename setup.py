@@ -15,5 +15,6 @@ setup(
         "rpwc"],
     install_requires=[
         "pyserial>=2.5",
-        "XBee>=2.1.0"]
+        "XBee>=2.1.0",
+        "tornado>=4.2.0"]
 )
