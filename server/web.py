@@ -31,7 +31,8 @@ class MainHandler(web.RequestHandler):
         self.results = []
 
     def get(self):
-        self.render("index.html", disabled=self.disabled, result=self.result_text)
+        self.render(
+            "index.html", disabled=self.disabled, result=self.result_text)
 
     def post(self, *args, **kwargs):
         push_range = self.get_argument("push_range")
