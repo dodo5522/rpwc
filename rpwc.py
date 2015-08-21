@@ -42,9 +42,9 @@ class RemotePowerController(object):
         self.frame_id = 0
         self.e = Event()
 
-        self.ser = serial.Serial(serial_port, serial_baurate)
+        self.ser = serial.Serial(serial_port, int(serial_baurate))
 
-        self.xbee_dest_addr = xbee_dest_addr
+        self.xbee_dest_addr = int(xbee_dest_addr, 16) if type(xbee_dest_addr) is str else xbee_dest_addr
         self.xbee_gpio_power = xbee_gpio_power
         self.bee = None
 
