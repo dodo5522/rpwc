@@ -147,11 +147,17 @@ if __name__ == "__main__":
         description="This's a tool to switch power ON or forcely OFF your PC")
 
     parser.add_argument(
-        "-d", "--dest-addr-long",
+        "-d", "--xbee-dest-addr",
         help="destination address of xbee terminal as hexdecimal",
         metavar="L",
         type=int,
         default=0x0013A20040AFBCCE)
+    parser.add_argument(
+        "-g", "--xbee-gpio-power",
+        help="GPIO pin name which is assigned to power control on xbee",
+        metavar="P",
+        type=str,
+        default="P0")
     parser.add_argument(
         "-p", "--serial-port",
         help="serial port device file path to communicate with xbee terminal",
@@ -173,8 +179,6 @@ if __name__ == "__main__":
 
     parsed_args = parser.parse_args()
     kwargs = {key: value for key, value in parsed_args._get_kwargs()}
-    # FIXME:
-    kwargs["gpio_pin"] = "P0"
 
     controller = RemotePowerController(**kwargs)
 

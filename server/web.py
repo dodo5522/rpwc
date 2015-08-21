@@ -19,10 +19,10 @@ class MainHandler(web.RequestHandler):
         web.RequestHandler.__init__(self, *args, **kwargs)
 
         params = {}
-        params["dest_addr_long"] = 0x0013A20040AFBCCE
+        params["xbee_dest_addr"] = 0x0013A20040AFBCCE
+        params["xbee_gpio_power"] = "P0"
         params["serial_port"] = "/dev/ttyAMA0"
         params["serial_baurate"] = 9600
-        params["gpio_pin"] =  "P0"
 
         self.ctrl = rpwc.RemotePowerController(**params)
 
