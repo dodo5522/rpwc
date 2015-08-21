@@ -27,14 +27,14 @@ class RemotePowerController(object):
     PIN_LEVEL_LOW = 0x04
 
     def __init__(self, serial_port, serial_baurate,
-                 dest_addr_long, gpio_pin, **kwargs):
+                 xbee_dest_addr, xbee_gpio_power, **kwargs):
         """ Initialize object.
 
         Args:
             serial_port       string for serial port like "/dev/tty1"
             serial_baurate    serial baurate as integer
-            dest_addr_long    XBee address to be controlled
-            gpio_pin          like "P0", "P1", etc.
+            xbee_dest_addr    XBee address to be controlled
+            xbee_gpio_power   like "P0", "P1", etc.
 
         Returns:
             None but raise error event if some error.
@@ -44,8 +44,8 @@ class RemotePowerController(object):
 
         self.ser = serial.Serial(serial_port, serial_baurate)
 
-        self.dest_addr_long = dest_addr_long
-        self.gpio_pin = gpio_pin
+        self.xbee_dest_addr = xbee_dest_addr
+        self.xbee_gpio_power = xbee_gpio_power
         self.bee = None
 
     def press_power_button(self, callback=None):
@@ -60,7 +60,8 @@ class RemotePowerController(object):
             None but raise error event if some error.
         """
         self.put_remote_command(
-            self.dest_addr_long, self.gpio_pin, self.PIN_LEVEL_HIGH, callback)
+            self.xbee_dest_addr, self.xbee_gpio_power, self.PIN_LEVEL_HIGH,
+            callback)
 
     def release_power_button(self, callback=None):
         """ Put remote AT command as releasing power buttion. This function does
@@ -74,15 +75,16 @@ class RemotePowerController(object):
             None but raise error event if some error.
         """
         self.put_remote_command(
-            self.dest_addr_long, self.gpio_pin, self.PIN_LEVEL_LOW, callback)
+            self.xbee_dest_addr, self.xbee_gpio_power, self.PIN_LEVEL_LOW,
+            callback)
 
     def put_remote_command(
-            self, dest_addr_long, command, param, callback=None):
+            self, xbee_dest_addr, command, param, callback=None):
         """ Put remote AT command to xbee client. This function can only support
             parameter with 1 byte like pin high/low.
 
         Args:
-            dest_addr_long   destination address of xbee as int
+            xbee_dest_addr   destination address of xbee as int
             command          like "P0", "P1", ...
             param            like 0x05 which is parameter against the command.
             callback         callable object to get response from remote xbee
@@ -100,7 +102,7 @@ class RemotePowerController(object):
         self.frame_id = self.frame_id + 1 if self.frame_id < 256 else 1
 
         self.bee.remote_at(
-            dest_addr_long=struct.pack('>Q', dest_addr_long),
+            xbee_dest_addr=struct.pack('>Q', xbee_dest_addr),
             command=command.encode("utf-8"),
             frame_id=int(self.frame_id).to_bytes(1, byteorder="big"),
             parameter=int(param).to_bytes(1, byteorder="big"))
