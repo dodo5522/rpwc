@@ -6,12 +6,61 @@
 import os
 import time
 import json
+import shelve
+import configparser
 import tornado.ioloop as ioloop
 import tornado.web as web
 import rpwc
 
 __author__ = "Takashi Ando"
 __copyright__ = "Copyright 2015, My own project"
+
+
+class Configuration(object):
+    DEFAULT_CONFIG = {
+        "xbee": {
+            "dest_addr": "0x0013A20040AFBCCE",
+            "gpio_power": "P0",
+        },
+        "serial": {
+            "port": "/dev/ttyAMA0",
+            "baurate": 9600,
+        },
+    }
+
+    def __init__(self,
+                 config_path="/var/tmp/rpwc.conf",
+                 db_path="/var/tmp/rpwc.db"):
+        self.config = configparser.SafeConfigParser()
+        self.db = shelve.open(db_path)
+
+        if os.path.isfile(config_path):
+            self.config.read(config_path)
+        else:
+            self.__write_default_config(config_path)
+
+    def __write_default_config(self, config_path):
+        for section in self.DEFAULT_CONFIG.keys():
+            self.config.add_section(section)
+
+            for option in self.DEFAULT_CONFIG[section]:
+                self.config.set(
+                    section, option, str(self.DEFAULT_CONFIG[section][option]))
+
+        with open(config_path, "w") as fp:
+            self.config.write(fp)
+
+    def __get_section_from_attr(self, name):
+        return name.split("_")[0]
+
+    def __get_option_from_attr(self, name):
+        return "_".join(name.split("_")[1:])
+
+    def __getattr__(self, name):
+        section = self.__get_section_from_attr(name)
+        option = self.__get_option_from_attr(name)
+
+        return self.config.get(section, option)
 
 
 class MainHandler(web.RequestHandler):
@@ -92,6 +141,9 @@ class ApiHandler(web.RequestHandler):
 
 
 if __name__ == "__main__":
+    config = Configuration()
+    print(config.xbee_gpio_power)
+
     path_here = os.path.dirname(os.path.abspath(__file__))
 
     application = web.Application(
