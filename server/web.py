@@ -26,13 +26,13 @@ class Configuration(object):
             "port": "/dev/ttyAMA0",
             "baurate": 9600,
         },
+        "general": {
+            "path_db": "/var/tmp/rpwc.db",
+        }
     }
 
-    def __init__(self,
-                 config_path="/var/tmp/rpwc.conf",
-                 db_path="/var/tmp/rpwc.db"):
+    def __init__(self, config_path="/var/tmp/rpwc.conf"):
         self.config = configparser.SafeConfigParser()
-        self.db = shelve.open(db_path)
 
         if os.path.isfile(config_path):
             self.config.read(config_path)
@@ -62,26 +62,32 @@ class Configuration(object):
 
         return self.config.get(section, option)
 
+    def get_attr_names(self):
+        return ["_".join((section, option))
+                for section in self.DEFAULT_CONFIG
+                for option in self.DEFAULT_CONFIG[section]]
+
 
 class MainHandler(web.RequestHandler):
     def __init__(self, *args, **kwargs):
         web.RequestHandler.__init__(self, *args, **kwargs)
 
-        params = {}
-        params["xbee_dest_addr"] = 0x0013A20040AFBCCE
-        params["xbee_gpio_power"] = "P0"
-        params["serial_port"] = "/dev/ttyAMA0"
-        params["serial_baurate"] = 9600
+        self.config = Configuration()
+        params = {key: getattr(self.config, key)
+                  for key in self.config.get_attr_names()}
 
         self.ctrl = rpwc.RemotePowerController(**params)
 
-        self.disabled = ""
-        self.result_text = ""
-        self.results = []
+        with shelve.open(self.config.general_path_db) as db:
+            db.clear()
+            db["disabled"] = ""
+            db["results"] = []
 
     def get(self):
-        self.render(
-            "index.html", disabled=self.disabled, result=self.result_text)
+        with shelve.open(self.config.general_path_db) as db:
+            self.render("index.html",
+                        disabled=db["disabled"],
+                        result="\n".join(db["result"]))
 
     def post(self, *args, **kwargs):
         push_range = self.get_argument("push_range")
@@ -93,7 +99,7 @@ class MainHandler(web.RequestHandler):
         if self.ctrl.wait_for_command_done(interval) is not True:
             raise rpwc.TimeoutError("Timeout!!!")
 
-        # FIXME
+        # FIXME: this sleep is not exact interval
         time.sleep(interval)
 
         self.ctrl.release_power_button(
@@ -111,7 +117,8 @@ class MainHandler(web.RequestHandler):
         # {'status': b'\x00', 'source_addr': b'%Y',
         #  'source_addr_long': b'\x00\x13\xa2\x00@\xaf\xbc\xce',
         #  'frame_id': b'\x01', 'command': b'P0', 'id': 'remote_at_response'}
-        self.results.append(read_frame)
+        with shelve.open(self.config.general_path_db) as db:
+            db["results"].append(read_frame)
 
         print("callback is called with " + str(read_frame))
         self.ctrl.set_event()
@@ -123,13 +130,11 @@ class MainHandler(web.RequestHandler):
         # {'status': b'\x00', 'source_addr': b'%Y',
         #  'source_addr_long': b'\x00\x13\xa2\x00@\xaf\xbc\xce',
         #  'frame_id': b'\x01', 'command': b'P0', 'id': 'remote_at_response'}
-        self.results.append(read_frame)
+        with shelve.open(self.config.general_path_db) as db:
+            db["results"].append(read_frame)
 
         print("callback is called with " + str(read_frame))
         self.ctrl.set_event()
-
-        self.disabled = ""
-        self.result_text = "\n".join(str(result) for result in self.results)
 
 
 class ApiHandler(web.RequestHandler):
@@ -144,6 +149,7 @@ class ApiHandler(web.RequestHandler):
 if __name__ == "__main__":
     config = Configuration()
     print(config.xbee_gpio_power)
+    print(config.get_attr_names())
 
     path_here = os.path.dirname(os.path.abspath(__file__))
 
