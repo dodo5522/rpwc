@@ -68,10 +68,10 @@ class MainHandler(web.RequestHandler):
         web.RequestHandler.__init__(self, *args, **kwargs)
 
         params = {}
-        params["dest_addr_long"] = 0x0013A20040AFBCCE
+        params["xbee_dest_addr"] = 0x0013A20040AFBCCE
+        params["xbee_gpio_power"] = "P0"
         params["serial_port"] = "/dev/ttyAMA0"
         params["serial_baurate"] = 9600
-        params["gpio_pin"] =  "P0"
 
         self.ctrl = rpwc.RemotePowerController(**params)
 
@@ -80,7 +80,8 @@ class MainHandler(web.RequestHandler):
         self.results = []
 
     def get(self):
-        self.render("index.html", disabled=self.disabled, result=self.result_text)
+        self.render(
+            "index.html", disabled=self.disabled, result=self.result_text)
 
     def post(self, *args, **kwargs):
         push_range = self.get_argument("push_range")

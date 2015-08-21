@@ -26,7 +26,8 @@ class RemotePowerController(object):
     PIN_LEVEL_HIGH = 0x05
     PIN_LEVEL_LOW = 0x04
 
-    def __init__(self, serial_port, serial_baurate, dest_addr_long, gpio_pin, **kwargs):
+    def __init__(self, serial_port, serial_baurate,
+                 dest_addr_long, gpio_pin, **kwargs):
         """ Initialize object.
 
         Args:
@@ -75,15 +76,16 @@ class RemotePowerController(object):
         self.put_remote_command(
             self.dest_addr_long, self.gpio_pin, self.PIN_LEVEL_LOW, callback)
 
-    def put_remote_command(self, dest_addr_long, command, param, callback=None):
+    def put_remote_command(
+            self, dest_addr_long, command, param, callback=None):
         """ Put remote AT command to xbee client. This function can only support
             parameter with 1 byte like pin high/low.
 
         Args:
-            dest_addr_long      destination address of xbee as int
-            command             like "P0", "P1", ...
-            param               like 0x05 which is parameter against the command.
-            callback            callable object to get response from remote xbee
+            dest_addr_long   destination address of xbee as int
+            command          like "P0", "P1", ...
+            param            like 0x05 which is parameter against the command.
+            callback         callable object to get response from remote xbee
 
         Returns:
             None but raise error event if some error.
@@ -145,11 +147,17 @@ if __name__ == "__main__":
         description="This's a tool to switch power ON or forcely OFF your PC")
 
     parser.add_argument(
-        "-d", "--dest-addr-long",
+        "-d", "--xbee-dest-addr",
         help="destination address of xbee terminal as hexdecimal",
         metavar="L",
         type=int,
         default=0x0013A20040AFBCCE)
+    parser.add_argument(
+        "-g", "--xbee-gpio-power",
+        help="GPIO pin name which is assigned to power control on xbee",
+        metavar="P",
+        type=str,
+        default="P0")
     parser.add_argument(
         "-p", "--serial-port",
         help="serial port device file path to communicate with xbee terminal",
@@ -171,8 +179,6 @@ if __name__ == "__main__":
 
     parsed_args = parser.parse_args()
     kwargs = {key: value for key, value in parsed_args._get_kwargs()}
-    # FIXME:
-    kwargs["gpio_pin"] = "P0"
 
     controller = RemotePowerController(**kwargs)
 
