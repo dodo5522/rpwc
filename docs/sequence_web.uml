@@ -1,0 +1,37 @@
+@startuml
+'title シーケンス図のサンプル
+hide footbox
+
+actor ユーザ as user
+participant "RaspberryPi + XBee" as control
+participant "Relay + XBee" as relay
+participant "PC電源スイッチ" as power
+
+user -> control : Webブラウザに\n 表示されたボタンを押す
+activate control
+    control -> control : コマンド実行
+
+    control -> relay : リモートATコマンド P0(pin6)\n + 05(デジタル出力high 3.3V)
+    activate relay
+    relay -> power : 電源ボタン接続端子ショート
+    activate power
+    control <-- relay : リモートATコマンド実行結果
+    destroy relay
+
+    control -> control : 1秒間待つ
+
+    control -> control : コマンド実行
+
+    control -> relay : リモートATコマンド P0(pin6)\n + 04(デジタル出力low 0V)
+    activate relay
+    relay -> power : 電源ボタン接続端子アンショート
+    deactivate power
+    destroy power
+    control <-- relay : リモートATコマンド実行結果
+    deactivate relay
+    destroy relay
+
+    user <- control : Webブラウザ上に\n コマンド実行結果を表示する
+deactivate control
+
+@enduml

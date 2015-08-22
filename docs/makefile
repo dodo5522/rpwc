@@ -16,11 +16,11 @@ endef
 
 .PHONY:all
 
-all:sequence.png
-	$(call SHOW_IMAGE,$<)
+all:sequence_cmd.png sequence_web.png
 
 %.png:%.uml $(DEPEND_FILES)
 	java -jar $(PLANTUML) -config $(CONFIG) $<
+	$(call SHOW_IMAGE,$@)
 
 .PHONY:clean
 
