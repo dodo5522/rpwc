@@ -152,8 +152,8 @@ if __name__ == "__main__":
         "-d", "--xbee-dest-addr",
         help="destination address of xbee terminal as hexdecimal",
         metavar="L",
-        type=int,
-        default=0x0013A20040AFBCCE)
+        type=str,
+        default="0x0013A20040AFBCCE")
     parser.add_argument(
         "-g", "--xbee-gpio-power",
         help="GPIO pin name which is assigned to power control on xbee",
