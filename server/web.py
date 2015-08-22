@@ -87,10 +87,6 @@ class MainHandler(web.RequestHandler):
         db.close()
 
     def post(self, *args, **kwargs):
-        db = shelve.open(self.config.general_path_db)
-        db.clear()
-        db.close()
-
         push_range = self.get_argument("push_range")
         interval = 5 if push_range == "long" else 1
 
@@ -121,7 +117,9 @@ class MainHandler(web.RequestHandler):
         db = shelve.open(self.config.general_path_db)
         if db.get("results") is None:
             db["results"] = []
-        db["results"].append(read_frame)
+        results = db["results"]
+        results.append(read_frame)
+        db["results"] = results
         db.close()
 
         print("callback is called with " + str(read_frame))
@@ -137,7 +135,9 @@ class MainHandler(web.RequestHandler):
         db = shelve.open(self.config.general_path_db)
         if db.get("results") is None:
             db["results"] = []
-        db["results"].append(read_frame)
+        results = db["results"]
+        results.append(read_frame)
+        db["results"] = results
         db.close()
 
         print("callback is called with " + str(read_frame))
