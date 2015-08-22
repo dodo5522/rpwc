@@ -15,7 +15,9 @@
                 <input class="button" type="submit" value="Force Reset Switch" {{ disabled }}>
             </form>
             <p>command result:</p>
-            <textarea class="textarea" value={{ result }} name="result" placeholder="Response will be shown here." readonly></textarea>
+            <textarea class="textarea" name="result" placeholder="Response will be shown here." readonly>
+                {{ result }}
+            </textarea>
         </div>
     </body>
 </html>
