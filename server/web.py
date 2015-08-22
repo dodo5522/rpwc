@@ -78,18 +78,19 @@ class MainHandler(web.RequestHandler):
 
         self.ctrl = rpwc.RemotePowerController(**params)
 
-        with shelve.open(self.config.general_path_db) as db:
-            db.clear()
-            db["disabled"] = ""
-            db["results"] = []
-
     def get(self):
-        with shelve.open(self.config.general_path_db) as db:
-            self.render("index.html",
-                        disabled=db["disabled"],
-                        result="\n".join(db["result"]))
+        db = shelve.open(self.config.general_path_db)
+        results = db.get("results")
+        self.render("index.html",
+                    disabled="",
+                    result="\n".join([] if results is None else results))
+        db.close()
 
     def post(self, *args, **kwargs):
+        db = shelve.open(self.config.general_path_db)
+        db.clear()
+        db.close()
+
         push_range = self.get_argument("push_range")
         interval = 5 if push_range == "long" else 1
 
@@ -117,8 +118,11 @@ class MainHandler(web.RequestHandler):
         # {'status': b'\x00', 'source_addr': b'%Y',
         #  'source_addr_long': b'\x00\x13\xa2\x00@\xaf\xbc\xce',
         #  'frame_id': b'\x01', 'command': b'P0', 'id': 'remote_at_response'}
-        with shelve.open(self.config.general_path_db) as db:
-            db["results"].append(read_frame)
+        db = shelve.open(self.config.general_path_db)
+        if db.get("results") is None:
+            db["results"] = []
+        db["results"].append(read_frame)
+        db.close()
 
         print("callback is called with " + str(read_frame))
         self.ctrl.set_event()
@@ -130,8 +134,11 @@ class MainHandler(web.RequestHandler):
         # {'status': b'\x00', 'source_addr': b'%Y',
         #  'source_addr_long': b'\x00\x13\xa2\x00@\xaf\xbc\xce',
         #  'frame_id': b'\x01', 'command': b'P0', 'id': 'remote_at_response'}
-        with shelve.open(self.config.general_path_db) as db:
-            db["results"].append(read_frame)
+        db = shelve.open(self.config.general_path_db)
+        if db.get("results") is None:
+            db["results"] = []
+        db["results"].append(read_frame)
+        db.close()
 
         print("callback is called with " + str(read_frame))
         self.ctrl.set_event()
