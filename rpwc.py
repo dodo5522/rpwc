@@ -102,7 +102,7 @@ class RemotePowerController(object):
         self.frame_id = self.frame_id + 1 if self.frame_id < 256 else 1
 
         self.bee.remote_at(
-            xbee_dest_addr=struct.pack('>Q', xbee_dest_addr),
+            dest_addr_long=struct.pack('>Q', xbee_dest_addr),
             command=command.encode("utf-8"),
             frame_id=int(self.frame_id).to_bytes(1, byteorder="big"),
             parameter=int(param).to_bytes(1, byteorder="big"))
