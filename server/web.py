@@ -83,7 +83,7 @@ class MainHandler(web.RequestHandler):
         results = db.get("results")
         self.render("index.html",
                     disabled="",
-                    result="\n".join([] if results is None else results))
+                    result="\n".join([] if results is None else [str(result) for result in results]))
         db.close()
 
     def post(self, *args, **kwargs):
