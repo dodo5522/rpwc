@@ -154,9 +154,9 @@ class ApiHandler(web.RequestHandler):
 
 
 if __name__ == "__main__":
+    listen_port = 8888
     config = Configuration()
-    print(config.xbee_gpio_power)
-    print(config.get_attr_names())
+    # print(config.get_attr_names())
 
     path_here = os.path.dirname(os.path.abspath(__file__))
 
@@ -165,7 +165,7 @@ if __name__ == "__main__":
         template_path=os.path.join(path_here, "templates"),
         static_path=os.path.join(path_here, "static"))
 
-    application.listen(8888)
-    print("Server is up....")
+    application.listen(listen_port)
+    print("Server is up with port {}....".format(listen_port))
 
     ioloop.IOLoop.instance().start()
