@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 
-from setuptools import setup
+from distutils.core import setup
 
 setup(
     name='rpwc',
@@ -9,8 +9,6 @@ setup(
     description='Remote power controller.',
     author='Takashi Ando',
     url='https://github.com/dodo5522/remote_power_controller',
-#    packages=[
-#        "driver"],
     py_modules=[
         "rpwc"],
     install_requires=[
