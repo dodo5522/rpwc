@@ -5,12 +5,13 @@ from distutils.core import setup
 
 setup(
     name='rpwc',
-    version='0.0.1',
+    version='0.0.2',
     description='Remote power controller.',
     author='Takashi Ando',
     url='https://github.com/dodo5522/remote_power_controller',
     py_modules=[
-        "rpwc"],
+        "rpwc",
+        "rpwcweb"],
     install_requires=[
         "pyserial>=2.5",
         "XBee>=2.1.0",
