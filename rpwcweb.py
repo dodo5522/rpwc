@@ -152,20 +152,18 @@ class ApiHandler(web.RequestHandler):
         self.set_header("Content-Type", "text/plain")
         self.write(json.dumps({"status": "OK", "detail": "none"}))
 
+path_here = os.path.dirname(os.path.abspath(__file__))
+app = web.Application(
+    [(r"/", MainHandler), (r"/api/(.+)", ApiHandler), ],
+    template_path=os.path.join(path_here, "templates"),
+    static_path=os.path.join(path_here, "static"))
 
 if __name__ == "__main__":
     listen_port = 8888
-    config = Configuration()
+    # config = Configuration()
     # print(config.get_attr_names())
 
-    path_here = os.path.dirname(os.path.abspath(__file__))
-
-    application = web.Application(
-        [(r"/", MainHandler), (r"/api/(.+)", ApiHandler), ],
-        template_path=os.path.join(path_here, "templates"),
-        static_path=os.path.join(path_here, "static"))
-
-    application.listen(listen_port)
+    app.listen(listen_port)
     print("Server is up with port {}....".format(listen_port))
 
     ioloop.IOLoop.instance().start()
