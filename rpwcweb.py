@@ -27,11 +27,12 @@ class Configuration(object):
             "baurate": 9600,
         },
         "general": {
-            "path_db": "/var/tmp/rpwc.db",
+            "path_db": "/var/tmp/rpwc/contents.db",
+            "path_docroot": "/var/tmp/rpwc/docroot",
         }
     }
 
-    def __init__(self, config_path="/var/tmp/rpwc.conf"):
+    def __init__(self, config_path="/etc/rpwc/setup.conf"):
         self.config = configparser.SafeConfigParser()
 
         if os.path.isfile(config_path):
@@ -152,11 +153,11 @@ class ApiHandler(web.RequestHandler):
         self.set_header("Content-Type", "text/plain")
         self.write(json.dumps({"status": "OK", "detail": "none"}))
 
-path_here = os.path.dirname(os.path.abspath(__file__))
+path_contents = Configuration().general_path_docroot
 app = web.Application(
     [(r"/", MainHandler), (r"/api/(.+)", ApiHandler), ],
-    template_path=os.path.join(path_here, "templates"),
-    static_path=os.path.join(path_here, "static"))
+    template_path=os.path.join(path_contents, "templates"),
+    static_path=os.path.join(path_contents, "static"))
 
 if __name__ == "__main__":
     listen_port = 8888
