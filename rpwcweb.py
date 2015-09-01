@@ -27,12 +27,12 @@ class Configuration(object):
             "baurate": 9600,
         },
         "general": {
-            "path_db": "/var/tmp/rpwc/contents.db",
-            "path_docroot": "/var/tmp/rpwc/docroot",
+            "path_db": "/var/tmp/rpwcweb/contents.db",
+            "path_docroot": "/var/tmp/rpwcweb/docroot",
         }
     }
 
-    def __init__(self, config_path="/etc/rpwc/setup.conf"):
+    def __init__(self, config_path="/etc/rpwcweb/setup.conf"):
         self.config = configparser.SafeConfigParser()
 
         if os.path.isfile(config_path):

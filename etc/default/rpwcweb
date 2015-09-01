@@ -1,0 +1,10 @@
+PACKAGE_NAME=rpwcweb
+MODULE_NAME=app
+BIND_ADDRESS=localhost
+BIND_PORT=8888
+LOG_ACCESS=/var/log/${PACKAGE_NAME}_access.log
+LOG_ERROR=/var/log/${PACKAGE_NAME}_error.log
+LOG_LEVEL=info
+PID_FILE=/var/run/${PACKAGE_NAME}.pid
+
+DAEMON_ARGS="-b ${BIND_ADDRESS}:${BIND_PORT} -k tornado -w 1 -D -p ${PID_FILE} --access-logfile ${LOG_ACCESS} --error-logfile ${LOG_ERROR} --log-level ${LOG_LEVEL} ${PACKAGE_NAME}:${MODULE_NAME}"
