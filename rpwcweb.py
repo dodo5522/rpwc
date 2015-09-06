@@ -14,6 +14,7 @@ import rpwc
 
 __author__ = "Takashi Ando"
 __copyright__ = "Copyright 2015, My own project"
+__debugging__ = False
 
 
 class Configuration(object):
@@ -77,7 +78,8 @@ class MainHandler(web.RequestHandler):
         params = {key: getattr(self.config, key)
                   for key in self.config.get_attr_names()}
 
-        self.ctrl = rpwc.RemotePowerController(**params)
+        self.ctrl = None if __debugging__ else rpwc.RemotePowerController(
+            **params)
 
     def get(self):
         db = shelve.open(self.config.general_path_db)
@@ -92,20 +94,22 @@ class MainHandler(web.RequestHandler):
         push_range = self.get_argument("push_range")
         interval = 5 if push_range == "long" else 1
 
-        self.ctrl.press_power_button(
-            callback=self.__on_power_button_pressed)
+        if self.ctrl:
+            self.ctrl.press_power_button(
+                callback=self.__on_power_button_pressed)
 
-        if self.ctrl.wait_for_command_done(interval) is not True:
-            raise rpwc.TimeoutError("Timeout!!!")
+            if self.ctrl.wait_for_command_done(interval) is not True:
+                raise rpwc.TimeoutError("Timeout!!!")
 
         # FIXME: this sleep is not exact interval
         time.sleep(interval)
 
-        self.ctrl.release_power_button(
-            callback=self.__on_power_button_released)
+        if self.ctrl:
+            self.ctrl.release_power_button(
+                callback=self.__on_power_button_released)
 
-        if self.ctrl.wait_for_command_done(interval) is not True:
-            raise rpwc.TimeoutError("Timeout!!!")
+            if self.ctrl.wait_for_command_done(interval) is not True:
+                raise rpwc.TimeoutError("Timeout!!!")
 
         self.redirect("/")
 
@@ -124,8 +128,9 @@ class MainHandler(web.RequestHandler):
         db["results"] = results
         db.close()
 
-        print("callback is called with " + str(read_frame))
-        self.ctrl.set_event()
+        if self.ctrl:
+            print("callback is called with " + str(read_frame))
+            self.ctrl.set_event()
 
     def __on_power_button_released(self, read_frame):
         """ Callback function which is called when xbee remote_at command
@@ -142,8 +147,9 @@ class MainHandler(web.RequestHandler):
         db["results"] = results
         db.close()
 
-        print("callback is called with " + str(read_frame))
-        self.ctrl.set_event()
+        if self.ctrl:
+            print("callback is called with " + str(read_frame))
+            self.ctrl.set_event()
 
 
 class ApiHandler(web.RequestHandler):
@@ -161,6 +167,18 @@ app = web.Application(
     static_path=os.path.join(path_contents, "static"))
 
 if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description="only for test.")
+    parser.add_argument(
+        "-d", "--debug",
+        action="store_true",
+        default=False,
+        help="not to access serial port if true")
+
+    args = parser.parse_args()
+    __debugging__ = args.debug
+
     listen_port = 8888
     # config = Configuration()
     # print(config.get_attr_names())
