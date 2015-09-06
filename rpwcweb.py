@@ -171,6 +171,12 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="only for test.")
     parser.add_argument(
+        "-p", "--port",
+        type=int,
+        metavar="P",
+        default=8888,
+        help="port number which is listened by rpcweb")
+    parser.add_argument(
         "-d", "--debug",
         action="store_true",
         default=False,
@@ -179,11 +185,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
     __debugging__ = args.debug
 
-    listen_port = 8888
     # config = Configuration()
     # print(config.get_attr_names())
 
-    app.listen(listen_port)
-    print("Server is up with port {}....".format(listen_port))
+    app.listen(args.port)
+    print("Server is up with port {}....".format(args.port))
 
     ioloop.IOLoop.instance().start()
