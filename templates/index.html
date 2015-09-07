@@ -9,19 +9,34 @@
         <script src="{{ static_url("bootstrap/js/bootstrap.min.js") }}"></script>
     </head>
     <body>
-        <div>
-            <form method="post" action="/">
-                <input type="hidden" value="short" name="push_range">
-                <input class="button" type="submit" value="Power Switch (On/Off)" {{ disabled }}>
-            </form>
-            <form method="post" action="/">
-                <input type="hidden" value="long" name="push_range">
-                <input class="button" type="submit" value="Force Reset Switch" {{ disabled }}>
-            </form>
-            <p>command result:</p>
-            <textarea class="textarea" name="result" placeholder="Response will be shown here." readonly>
-                {{ result }}
-            </textarea>
+        <nav class="navbar navbar-inverse navbar-static-top">
+            <p class="navbar-text navbar-left">Remote Power Controller</p>
+            <button form="short_push" type="submit" class="btn btn-primary navbar-btn" {{disabled}}><span class="glyphicon glyphicon-off" aria-hidden="true"></span> Power Off/On</button>
+            <button form="long_push" type="submit" class="btn btn-primary navbar-btn" {{disabled}}><span class="glyphicon glyphicon-off"></span> Force Reset</button>
+        </nav>
+
+        <div class="jumbotron">
+            <h3 class="">Command Response</h3>
+            <div class="container">
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        {{result}}
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="">Status</h3>
+            <div class="alert alert-{{status}}" role="alert">
+                {{message}}
+            </div>
         </div>
+
+        <!-- form for post data to server -->
+        <form id="short_push" method="post" action="/">
+            <input type="hidden" value="short" name="push_range">
+        </form>
+        <form id="long_push" method="post" action="/">
+            <input type="hidden" value="long" name="push_range">
+        </form>
     </body>
 </html>

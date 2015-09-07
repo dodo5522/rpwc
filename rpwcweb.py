@@ -87,7 +87,10 @@ class MainHandler(web.RequestHandler):
         self.render("index.html",
                     disabled="",
                     result="\n".join([] if results is None else
-                                     [str(result) for result in results]))
+                                     [str(result) for result in results]),
+                    # "success", "info", "warning" or "danger"
+                    status="success" if 1 else "info",
+                    message="test message")
         db.close()
 
     def post(self, *args, **kwargs):
