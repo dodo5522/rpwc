@@ -7,3 +7,6 @@ dist
 rpwc.egg-info
 pip-selfcheck.json
 *.pyc
+.python-version
+.Python
+EGG-INFO
