@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 
-from distutils.core import setup
+from setuptools import setup, find_packages
+
+
+def requires():
+    with open("requiremensts.txt", "r") as fp:
+        return [p for p in fp]
+
 
 setup(
     name='rpwc',
@@ -9,11 +15,6 @@ setup(
     description='Remote power controller.',
     author='Takashi Ando',
     url='https://github.com/dodo5522/remote_power_controller',
-    py_modules=[
-        "rpwc",
-        "rpwcweb"],
-    install_requires=[
-        "pyserial>=2.5",
-        "XBee>=2.1.0",
-        "tornado>=4.2.0"]
+    py_modules=find_packages(),
+    install_requires=requires()
 )
