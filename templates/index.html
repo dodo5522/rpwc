@@ -1,42 +1,32 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta name="viewport" content="width=device-width,initial-scale=1.0">
-        <title>Remote Power Controller</title>
-        <link rel="stylesheet" href="{{ static_url("basic.css") }}"/>
-        <link rel="stylesheet" href="{{ static_url("bootstrap/css/bootstrap.min.css") }}"/>
-        <link rel="stylesheet" href="{{ static_url("bootstrap/css/bootstrap-theme.css") }}"/>
-        <script src="{{ static_url("bootstrap/js/bootstrap.min.js") }}"></script>
-    </head>
-    <body>
-        <nav class="navbar navbar-inverse navbar-static-top">
-            <p class="navbar-text navbar-left">Remote Power Controller</p>
-            <button form="short_push" type="submit" class="btn btn-primary navbar-btn" {{disabled}}><span class="glyphicon glyphicon-off" aria-hidden="true"></span> Power Off/On</button>
-            <button form="long_push" type="submit" class="btn btn-primary navbar-btn" {{disabled}}><span class="glyphicon glyphicon-off"></span> Force Reset</button>
-        </nav>
+  <head>
+    <title>Remote Power Controller</title>
+    <link rel="stylesheet" href="/static/mine/simple.css" type="text/css"></link>
+  </head>
+  <body>
+    <h1>Remote Power Controller</h1>
+    <p><button form="short_push" type="submit" {{disabled}}>Power Off/On</button></p>
+    <p><button form="long_push" type="submit" {{disabled}}>Force Reset</button></p>
 
-        <div class="jumbotron">
-            <h3 class="">Command Response</h3>
-            <div class="container">
-                <div class="panel panel-default">
-                    <div class="panel-body">
-                        {{result}}
-                    </div>
-                </div>
-            </div>
+    <h2 class="">Status</h2>
+    <p>
+        {{message}}
+    </p>
 
-            <h3 class="">Status</h3>
-            <div class="alert alert-{{status}}" role="alert">
-                {{message}}
-            </div>
-        </div>
+    <h2 class="">Command Response</h2>
+    <p>
+      {% for result in results %}
+        {{ result | nl2br }}
+      {% endfor %}
+    </p>
 
-        <!-- form for post data to server -->
-        <form id="short_push" method="post" action="/">
-            <input type="hidden" value="short" name="push_range">
-        </form>
-        <form id="long_push" method="post" action="/">
-            <input type="hidden" value="long" name="push_range">
-        </form>
-    </body>
+    <!-- form for post data to server -->
+    <form id="short_push" method="post" action="/post">
+        <input type="hidden" value="short" name="push_range">
+    </form>
+    <form id="long_push" method="post" action="/post">
+        <input type="hidden" value="long" name="push_range">
+    </form>
+  </body>
 </html>
