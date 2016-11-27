@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 
 def requires():
-    with open("requiremensts.txt", "r") as fp:
+    with open("requirements.txt", "r") as fp:
         return [p for p in fp]
 
 
