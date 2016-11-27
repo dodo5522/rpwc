@@ -7,7 +7,6 @@
 """
 
 from threading import Event
-import time
 import struct
 import serial
 import xbee
@@ -15,10 +14,6 @@ import xbee
 __author__ = "Takashi Ando"
 __copyright__ = "Copyright 2015, My own project"
 __license__ = "GPL"
-
-
-class TimeoutError(Exception):
-    pass
 
 
 class RemotePowerController(object):
@@ -142,54 +137,6 @@ class RemotePowerController(object):
         self.e.clear()
         return ret
 
+
 if __name__ == "__main__":
-    import argparse
-
-    parser = argparse.ArgumentParser(
-        description="This's a tool to switch power ON or forcely OFF your PC")
-
-    parser.add_argument(
-        "-d", "--xbee-dest-addr",
-        help="destination address of xbee terminal as hexdecimal",
-        metavar="L",
-        type=str,
-        default="0x0013A20040AFBCCE")
-    parser.add_argument(
-        "-g", "--xbee-gpio-power",
-        help="GPIO pin name which is assigned to power control on xbee",
-        metavar="P",
-        type=str,
-        default="P0")
-    parser.add_argument(
-        "-p", "--serial-port",
-        help="serial port device file path to communicate with xbee terminal",
-        metavar="M",
-        type=str,
-        default="/dev/ttyAMA0")
-    parser.add_argument(
-        "-b", "--serial-baurate",
-        help="serial port baurate",
-        metavar="N",
-        type=int,
-        default=9600)
-    parser.add_argument(
-        "-i", "--interval",
-        help="interval time between press and release of power buton",
-        metavar="I",
-        type=int,
-        default=1)
-
-    parsed_args = parser.parse_args()
-    kwargs = dict(parsed_args._get_kwargs())
-
-    controller = RemotePowerController(**kwargs)
-
-    controller.press_power_button()
-    if controller.wait_for_command_done(timeout=1) is not True:
-        raise TimeoutError("Timeout!!!")
-
-    time.sleep(parsed_args.interval)
-
-    controller.release_power_button()
-    if controller.wait_for_command_done(timeout=1) is not True:
-        raise TimeoutError("Timeout!!!")
+    pass

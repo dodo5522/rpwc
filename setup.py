@@ -11,10 +11,14 @@ def requires():
 
 setup(
     name='rpwc',
-    version='0.0.2',
+    version='0.0.3',
     description='Remote power controller.',
+    license="Apache Software License",
     author='Takashi Ando',
-    url='https://github.com/dodo5522/remote_power_controller',
-    py_modules=find_packages(),
+    url='https://github.com/dodo5522/rpwc',
+    entry_points={
+        "console_scripts": ["rpwc=rpwc.__main__:main"],
+    },
+    packages=find_packages(),
     install_requires=requires()
 )
