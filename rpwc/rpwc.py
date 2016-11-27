@@ -180,7 +180,7 @@ if __name__ == "__main__":
         default=1)
 
     parsed_args = parser.parse_args()
-    kwargs = {key: value for key, value in parsed_args._get_kwargs()}
+    kwargs = dict(parsed_args._get_kwargs())
 
     controller = RemotePowerController(**kwargs)
 
