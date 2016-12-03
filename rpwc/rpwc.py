@@ -15,140 +15,136 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-""" rpwc : Remote Power Controller
-"""
-
 from threading import Event
+from threading import Thread
+import random
 import struct
 import serial
+import time
 import xbee
 
-__author__ = "Takashi Ando"
-__copyright__ = "Copyright 2015, My own project"
-__license__ = "GPL"
 
+class ZigbeeCommander(object):
+    """ Put remote AT command to xbee client. This function can only support
+        parameter with 1 byte like pin high/low.
 
-class RemotePowerController(object):
-    """ Main routine class for power control. """
-    PIN_LEVEL_HIGH = 0x05
-    PIN_LEVEL_LOW = 0x04
+    Args:
+        xbee_dest_addr   destination address of xbee as int
+        command          like "P0", "P1", ...
+        param            like 0x05 which is parameter against the command.
+        callback         callable object to return the result of xbee operation.
 
-    def __init__(self, serial_port, serial_baurate,
-                 xbee_dest_addr, xbee_gpio_power, **kwargs):
-        """ Initialize object.
+    Returns:
+        tuple of sent and received frame IDs if callback is None. If the
+        callback is not None, the result is passed through the callback.
+    """
+    CMD_PARAM_HIGH = 0x05
+    CMD_PARAM_LOW = 0x04
 
-        Args:
-            serial_port       string for serial port like "/dev/tty1"
-            serial_baurate    serial baurate as integer
-            xbee_dest_addr    XBee address to be controlled
-            xbee_gpio_power   like "P0", "P1", etc.
+    def __init__(self, ser_port, ser_bau, dest_addr, cmd, cmd_param):
+        self._dest_addr = dest_addr
+        self._cmd = cmd
+        self._cmd_param = cmd_param
+        self._evt_got_frame = Event()
+        self._ser_obj = serial.Serial(ser_port, int(ser_bau))
+        self._t_obj = Thread(target=self._t_target, args=(), kwargs={})
+        self._sent_frame = 0
+        self._received_frame = 0
 
-        Returns:
-            None but raise error event if some error.
+    def is_ok(self):
+        """ Zigbee command is done and succeeded. """
+        if not self._evt_got_frame.is_set():
+            return False
+        if self._sent_frame is 0 or self._received_frame is 0:
+            return False
+        if self._sent_frame != self._received_frame:
+            return False
+        else:
+            return True
+
+    def wait(self, timeout=5):
+        """ Wait for the Zigbee command is done.
+
+        args:
+            timeout: Timeout of waiting.
+
+        returns:
+            True if Zigbee command is done. False if not.
         """
-        self.frame_id = 0
-        self.e = Event()
+        self._t_obj.join(timeout)
+        return not self._t_obj.is_alive()
 
-        self.ser = serial.Serial(serial_port, int(serial_baurate))
+    def put(self):
+        if self._t_obj.is_alive() or not self._evt_got_frame.is_set():
+            raise RuntimeError("put cannot be run twice.")
 
-        self.xbee_dest_addr = int(xbee_dest_addr, 16) if type(xbee_dest_addr) is str else xbee_dest_addr
-        self.xbee_gpio_power = xbee_gpio_power
-        self.bee = None
+        self._t_obj.start()
 
-    def press_power_button(self, callback=None):
-        """ Put remote AT command as pushing power buttion. This function does
-            same operation as sending remote AT command to set high level to a
-            GPIO pin.
-
-        Args:
-            callback    callable object to get response from remote xbee
-
-        Returns:
-            None but raise error event if some error.
+    def _t_target(self, *args, **kwargs):
+        """ Thread target function.
         """
-        self.put_remote_command(
-            self.xbee_dest_addr, self.xbee_gpio_power, self.PIN_LEVEL_HIGH,
-            callback)
+        def get_frame_id(self, read_frame):
+            self._received_frame = read_frame
+            self._evt_got_frame.set()
 
-    def release_power_button(self, callback=None):
-        """ Put remote AT command as releasing power buttion. This function does
-            same operation as sending remote AT command to set low level to a
-            GPIO pin.
+        bee = xbee.ZigBee(
+            self._ser_obj,
+            escaped=True,
+            callback=get_frame_id)
 
-        Args:
-            callback    callable object to get response from remote xbee
-
-        Returns:
-            None but raise error event if some error.
-        """
-        self.put_remote_command(
-            self.xbee_dest_addr, self.xbee_gpio_power, self.PIN_LEVEL_LOW,
-            callback)
-
-    def put_remote_command(
-            self, xbee_dest_addr, command, param, callback=None):
-        """ Put remote AT command to xbee client. This function can only support
-            parameter with 1 byte like pin high/low.
-
-        Args:
-            xbee_dest_addr   destination address of xbee as int
-            command          like "P0", "P1", ...
-            param            like 0x05 which is parameter against the command.
-            callback         callable object to get response from remote xbee
-
-        Returns:
-            None but raise error event if some error.
-        """
-        self.e.clear()
-
-        self.bee = xbee.ZigBee(
-            self.ser, escaped=True,
-            callback=self.__on_remote_command_done
-            if callback is None else callback)
-
-        self.frame_id = self.frame_id + 1 if self.frame_id < 256 else 1
-
-        self.bee.remote_at(
-            dest_addr_long=struct.pack('>Q', xbee_dest_addr),
-            command=command.encode("utf-8"),
-            frame_id=int(self.frame_id).to_bytes(1, byteorder="big"),
-            parameter=int(param).to_bytes(1, byteorder="big"))
-
-    def __on_remote_command_done(self, read_frame):
-        """ Default callback function which is called when xbee remote_at
-            command finished. """
+        self._sent_frame = random.randint(1, 255)
 
         # {'status': b'\x00', 'source_addr': b'%Y',
         #  'source_addr_long': b'\x00\x13\xa2\x00@\xaf\xbc\xce',
         #  'frame_id': b'\x01', 'command': b'P0', 'id': 'remote_at_response'}
-        print(read_frame)
-        self.set_event()
+        bee.remote_at(
+            dest_addr_long=struct.pack('>Q', self._dest_addr),
+            command=self._cmd.encode("utf-8"),
+            frame_id=int(self._sent_frame).to_bytes(1, byteorder="big"),
+            parameter=int(self._cmd_param).to_bytes(1, byteorder="big"))
 
-    def set_event(self):
-        """ Set event to wait for getting response from remote xbee. """
-        self.e.set()
+        self._evt_got_frame.wait(5)
 
-    def wait_for_command_done(self, timeout=3):
-        """ Wait event for getting response from remote xbee.
-
-        Args:
-            timeout     timeout value as second
-
-        Returns:
-            False if timeout.
-        """
-        ret = False
-
-        if self.e.wait(timeout) is True:
-            ret = True
-
-        if self.bee is not None:
-            self.bee.halt()
-            self.bee = None
-
-        self.e.clear()
-        return ret
+        bee.halt()
+        bee = None
 
 
-if __name__ == "__main__":
-    pass
+def push_button(**kwargs):
+    """ Put remote AT command as pushing power buttion. This function does
+        same operation as sending remote AT command to set high level to a
+        GPIO pin.
+
+    args:
+        callback_to_notify_done: callable object with arguments **kwargs.
+            kwargs["frame_id_received"] and kwargs["frame_id_sent"] are
+            passed and you can check them. If callback it not set, this
+            method is called as an synchronous function.
+
+    raises:
+        None if callback_to_get_result is set. If the callback is not set, this
+        method runs as synchronous function and raises FrameIdIsNotMatchedError
+        if the sent and received frame ID is not matched.
+    """
+    button_pressure = ZigbeeCommander(
+        kwargs.get("serial_port"),
+        kwargs.get("serial_baurate"),
+        kwargs.get("xbee_dest_addr"),
+        kwargs.get("xbee_gpio_power"),
+        ZigbeeCommander.CMD_PARAM_HIGH)
+
+    button_releaser = ZigbeeCommander(
+        kwargs.get("serial_port"),
+        kwargs.get("serial_baurate"),
+        kwargs.get("xbee_dest_addr"),
+        kwargs.get("xbee_gpio_power"),
+        ZigbeeCommander.CMD_PARAM_HIGH)
+
+    button_pressure.put()
+    button_pressure.wait()
+    print(button_pressure.is_ok())
+
+    time.sleep(kwargs("interval"))
+
+    button_releaser.put()
+    button_releaser.wait()
+    print(button_releaser.is_ok())

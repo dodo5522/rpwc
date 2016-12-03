@@ -17,8 +17,7 @@
 
 import argparse
 import sys
-import time
-from rpwc.rpwc import RemotePowerController
+from rpwc.rpwc import push_button
 
 
 def init_args(argv=sys.argv[1:]):
@@ -71,17 +70,7 @@ def main():
     """ main routine.
     """
     kwargs = init_args()
-    controller = RemotePowerController(**kwargs)
-
-    controller.press_power_button()
-    if controller.wait_for_command_done(timeout=1) is not True:
-        raise TimeoutError("Timeout to press power button!!!")
-
-    time.sleep(kwargs["interval"])
-
-    controller.release_power_button()
-    if controller.wait_for_command_done(timeout=1) is not True:
-        raise TimeoutError("Timeout to release power button!!!")
+    push_button(**kwargs)
 
 
 main()
