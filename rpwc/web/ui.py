@@ -37,12 +37,6 @@ def index():
         message="test message")
 
 
-@application.route("/post", methods=["POST", ])
-def post():
-    """ post form page. """
-    return redirect("/")
-
-
 @application.template_filter("nl2br")
 def filter_nl2br(s):
     return escape(s).replace("\n", Markup("<br>"))
