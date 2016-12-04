@@ -72,6 +72,9 @@ def main():
     kwargs = init_args()
     ret = push_button(**kwargs)
 
+    # TODO: both is False
+    # if False in ret:
+    #     raise SystemError("some error on pushing power button.")
 
 
 if __name__ == "__main__":
