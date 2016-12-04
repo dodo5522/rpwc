@@ -29,7 +29,7 @@ class ZigbeeCommander(object):
         parameter with 1 byte like pin high/low.
 
     Args:
-        xbee_dest_addr   destination address of xbee as int
+        xbee_dest_addr   destination address of xbee as str with hex.
         command          like "P0", "P1", ...
         param            like 0x05 which is parameter against the command.
         callback         callable object to return the result of xbee operation.
@@ -42,7 +42,7 @@ class ZigbeeCommander(object):
     CMD_PARAM_LOW = 0x04
 
     def __init__(self, ser_port, ser_bau, dest_addr, cmd, cmd_param):
-        self._dest_addr = dest_addr
+        self._dest_addr = int(dest_addr, 16)
         self._cmd = cmd
         self._cmd_param = cmd_param
         self._evt_got_frame = Event()
