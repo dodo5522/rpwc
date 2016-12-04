@@ -145,7 +145,7 @@ def push_button(**kwargs):
     button_pressure.wait()
     print(button_pressure.is_ok())
 
-    time.sleep(kwargs("interval"))
+    time.sleep(kwargs.get("interval"))
 
     button_releaser.put()
     button_releaser.wait()
