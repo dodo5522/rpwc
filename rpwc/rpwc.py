@@ -41,12 +41,12 @@ class ZigbeeCommander(object):
     CMD_PARAM_HIGH = 0x05
     CMD_PARAM_LOW = 0x04
 
-    def __init__(self, ser_port, ser_bau, dest_addr, cmd, cmd_param):
+    def __init__(self, ser_obj, dest_addr, cmd, cmd_param):
         self._dest_addr = int(dest_addr, 16)
         self._cmd = cmd
         self._cmd_param = cmd_param
         self._evt_got_frame = Event()
-        self._ser_obj = serial.Serial(ser_port, int(ser_bau))
+        self._ser_obj = ser_obj
         self._t_obj = Thread(target=self._t_target, args=(), kwargs={})
         self._sent_frame = 0
         self._received_frame = 0
@@ -85,8 +85,8 @@ class ZigbeeCommander(object):
     def _t_target(self, *args, **kwargs):
         """ Thread target function.
         """
-        def get_frame_id(self, read_frame):
-            self._received_frame = read_frame
+        def get_frame_id(read_frame):
+            self._received_frame = int.from_bytes(read_frame, "big")
             self._evt_got_frame.set()
 
         bee = xbee.ZigBee(
@@ -105,7 +105,7 @@ class ZigbeeCommander(object):
             frame_id=int(self._sent_frame).to_bytes(1, byteorder="big"),
             parameter=int(self._cmd_param).to_bytes(1, byteorder="big"))
 
-        self._evt_got_frame.wait(5)
+        self._evt_got_frame.wait(3)
 
         bee.halt()
         bee = None
@@ -122,31 +122,35 @@ def push_button(**kwargs):
             passed and you can check them. If callback it not set, this
             method is called as an synchronous function.
 
+    returns:
+        [True, True] if all operation is finished successfully.
+
     raises:
         None if callback_to_get_result is set. If the callback is not set, this
         method runs as synchronous function and raises FrameIdIsNotMatchedError
         if the sent and received frame ID is not matched.
     """
-    button_pressure = ZigbeeCommander(
-        kwargs.get("serial_port"),
-        kwargs.get("serial_baurate"),
+    ser_obj = serial.Serial(
+        kwargs.get("serial_port"), kwargs.get("serial_baurate"))
+
+    pressing_button = ZigbeeCommander(
+        ser_obj,
         kwargs.get("xbee_dest_addr"),
         kwargs.get("xbee_gpio_power"),
         ZigbeeCommander.CMD_PARAM_HIGH)
 
-    button_releaser = ZigbeeCommander(
-        kwargs.get("serial_port"),
-        kwargs.get("serial_baurate"),
+    releasing_button = ZigbeeCommander(
+        ser_obj,
         kwargs.get("xbee_dest_addr"),
         kwargs.get("xbee_gpio_power"),
-        ZigbeeCommander.CMD_PARAM_HIGH)
+        ZigbeeCommander.CMD_PARAM_LOW)
 
-    button_pressure.put()
-    button_pressure.wait()
-    print(button_pressure.is_ok())
+    pressing_button.put()
+    pressing_button.wait()
 
     time.sleep(kwargs.get("interval"))
 
-    button_releaser.put()
-    button_releaser.wait()
-    print(button_releaser.is_ok())
+    releasing_button.put()
+    releasing_button.wait()
+
+    return [pressing_button.is_ok(), releasing_button.is_ok()]

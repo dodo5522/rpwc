@@ -70,7 +70,7 @@ def main():
     """ main routine.
     """
     kwargs = init_args()
-    push_button(**kwargs)
+    ret = push_button(**kwargs)
 
 
 
