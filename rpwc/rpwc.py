@@ -75,7 +75,9 @@ class ZigbeeCommander(object):
         return not self._t_obj.is_alive()
 
     def put(self):
-        if self._t_obj.is_alive() or not self._evt_got_frame.is_set():
+        if self._t_obj.is_alive():
+            raise RuntimeError("put cannot be run twice.")
+        elif self._evt_got_frame.is_set():
             raise RuntimeError("put cannot be run twice.")
 
         self._t_obj.start()
