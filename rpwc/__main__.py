@@ -73,4 +73,6 @@ def main():
     push_button(**kwargs)
 
 
-main()
+
+if __name__ == "__main__":
+    main()
