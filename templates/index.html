@@ -2,31 +2,29 @@
 <html>
   <head>
     <title>Remote Power Controller</title>
-    <link rel="stylesheet" href="/static/mine/simple.css" type="text/css"></link>
+    <script src="/static/jquery-3.1.1.min.js"></script>
+    <script src="/static/sweetalert/js/sweetalert.min.js"></script>
+    <script src="/static/mine/js/parts.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/sweetalert/css/sweetalert.css">
+    <link rel="stylesheet" href="/static/mine/css/simple.css" type="text/css">
   </head>
   <body>
     <h1>Remote Power Controller</h1>
-    <p><button form="short_push" type="submit" {{disabled}}>Power Off/On</button></p>
-    <p><button form="long_push" type="submit" {{disabled}}>Force Reset</button></p>
+
+    <h2 class="">Operation</h2>
+    <p><button class="cancel" onclick="pushPowerButton('short')">Power Off/On</button>
+       <button class="cancel" onclick="pushPowerButton('long')">Force Reset</button></p>
 
     <h2 class="">Status</h2>
     <p>
         {{message}}
     </p>
 
-    <h2 class="">Command Response</h2>
+    <h2 class="">Response</h2>
     <p>
       {% for result in results %}
         {{ result | nl2br }}
       {% endfor %}
     </p>
-
-    <!-- form for post data to server -->
-    <form id="short_push" method="post" action="/post">
-        <input type="hidden" value="short" name="push_range">
-    </form>
-    <form id="long_push" method="post" action="/post">
-        <input type="hidden" value="long" name="push_range">
-    </form>
   </body>
 </html>
