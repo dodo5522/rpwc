@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
   <head>
     <title>Remote Power Controller</title>
-    <script src="/static/jquery-3.1.1.min.js"></script>
-    <script src="/static/sweetalert/js/sweetalert.min.js"></script>
-    <script src="/static/mine/js/parts.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/static/sweetalert/css/sweetalert.css">
-    <link rel="stylesheet" href="/static/mine/css/simple.css" type="text/css">
+    <link rel="stylesheet" type="text/css" href="/static/mine/css/simple.css">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   </head>
   <body>
     <h1>Remote Power Controller</h1>
@@ -26,5 +26,10 @@
         {{ result | nl2br }}
       {% endfor %}
     </p>
+
+    <script src="/static/bootstrap/js/bootstrap.min.js"></script>
+    <script src="/static/jquery-3.1.1.min.js"></script>
+    <script src="/static/sweetalert/js/sweetalert.min.js"></script>
+    <script src="/static/mine/js/parts.js"></script>
   </body>
 </html>
