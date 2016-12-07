@@ -17,7 +17,10 @@ setup(
     author='Takashi Ando',
     url='https://github.com/dodo5522/rpwc',
     entry_points={
-        "console_scripts": ["rpwc=rpwc.__main__:main"],
+        "console_scripts": [
+            "rpwc=rpwc.__main__:main",
+            "rpwcweb=rpwc.web.ui:main",
+        ],
     },
     packages=find_packages(),
     install_requires=requires(),
