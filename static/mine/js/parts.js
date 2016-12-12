@@ -12,8 +12,15 @@ function _post(api) {
   form.submit();
 }
 
+function show_response(msg) {
+  $("#response").html(msg);
+}
+
 function post(api) {
-  $.post('/api/' + api, {}, function(serverResponse){console.log(serverResponse)}, "json")
+  $.post('/api/' + api, {}, function(res){
+    console.log(res);
+    show_response(res.result);
+  }, "json")
 }
 
 function pushPowerButton(range) {
@@ -38,14 +45,14 @@ function pushPowerButton(range) {
     showConfirmButton:true,
     showCancelButton:true,
     closeOnConfirm:false,
-    closeOnCancel:false
+    closeOnCancel:true
   },
   function(isConfirm){
     if(isConfirm){
       post(api)
       swal("Done!", "Check the status of power.", "success");
     }else{
-      swal("Do nothing.", "See you!", "error");
+      show_response("Nothing to do.");
     }
   });
 }

@@ -7,9 +7,9 @@ body {
 h1 {
   padding: 2px 5px;
   margin: 0;
-  border-bottom: solid 1px #29487D;
+  border-bottom: solid 1px #B9B9B9;
   color: white;
-  background-color: #3B5998;
+  background-color: #000000;
 }
 
 h2, h3, h4, h5, h6 {
@@ -24,19 +24,4 @@ p {
   padding: 3px 10px;
   margin: 0;
   font-size: 1em;
-}
-
-button:hover {
-}
-
-button {
-  padding: 10px;
-  color: white;
-  font-weight: bold;
-  font-size: 1em;
-  background-color: #B9B9B9;
-  border: none;
-  border-radius: 5px;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
 }
