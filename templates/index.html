@@ -1,31 +1,30 @@
 <!DOCTYPE html>
 <html lang="ja">
   <head>
-    <title>Remote Power Controller</title>
+    <title>Remote Power Switch</title>
     <link rel="stylesheet" type="text/css" href="/static/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/static/sweetalert/css/sweetalert.css">
     <link rel="stylesheet" type="text/css" href="/static/mine/css/simple.css">
-
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   </head>
+
   <body>
-    <h1>Remote Power Controller</h1>
+    <div class="container-fruid">
+      <h1>Remote Power Switch</h1>
 
-    <h2 class="">Operation</h2>
-    <p><button class="cancel" onclick="pushPowerButton('short')">Power Off/On</button>
-       <button class="cancel" onclick="pushPowerButton('long')">Force Reset</button></p>
+      <h2 class="">Operation</h2>
 
-    <h2 class="">Status</h2>
-    <p>
-        {{message}}
-    </p>
+      <div class="row">
+        <div class="col-md-6"><button class="text-center btn btn-primary btn-lg" onclick="pushPowerButton('short')">Push power button</button></div>
+        <div class="col-md-6"><button class="text-center btn btn-danger btn-lg" onclick="pushPowerButton('long')">Long push power button(Reset forcely)</button></div>
+      </div>
 
       <h2>Response</h2>
       <p id="response"></p>
     </div>
 
-    <script src="/static/bootstrap/js/bootstrap.min.js"></script>
     <script src="/static/jquery-3.1.1.min.js"></script>
+    <script src="/static/bootstrap/js/bootstrap.min.js"></script>
     <script src="/static/sweetalert/js/sweetalert.min.js"></script>
     <script src="/static/mine/js/parts.js"></script>
   </body>
