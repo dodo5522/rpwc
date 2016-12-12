@@ -45,7 +45,7 @@ function pushPowerButton(range) {
     showConfirmButton:true,
     showCancelButton:true,
     closeOnConfirm:false,
-    closeOnCancel:false
+    closeOnCancel:true
   },
   function(isConfirm){
     if(isConfirm){
