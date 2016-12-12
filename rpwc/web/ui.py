@@ -99,5 +99,9 @@ def do_force_power_off():
         return json.dumps({"result": "OK"})
 
 
+def main(bind="localhost", port=8088, debug=True):
+    application.run(bind, port, debug)
+
+
 if __name__ == "__main__":
-    application.run("", port=8088, debug=True)
+    main()
