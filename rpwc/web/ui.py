@@ -21,13 +21,17 @@ from serial.serialutil import SerialException
 import json
 import shelve
 
-
 button_params = {
     "serial_port": "/dev/ttyAMA0",
     "serial_baurate": 9600,
     "xbee_dest_addr": "0x0013A20040AFBCCE",
     "xbee_gpio_power": "P0",
 }
+
+application = Flask(
+    "rpwc_web_application",
+    template_folder="/var/tmp/rpwcweb/templates",
+    static_folder="/var/tmp/rpwcweb/static")
 
 
 @application.route("/")
