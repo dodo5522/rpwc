@@ -16,47 +16,18 @@
 #   limitations under the License.
 
 from flask import Flask, request, render_template, redirect, escape, Markup
-from rpwc import rpwc
+from rpwc.rpwc import push_button
+from serial.serialutil import SerialException
 import json
-import serial
 import shelve
-import time
 
 
-application = Flask("rpwc_web_application")
-
-
-def get_buttons(serial_port="/dev/ttyAMA0", serial_baurate=9600, dest="0x0013A20040AFBCCE", gpio="P0"):
-    pressing_button = None
-    releasing_button = None
-
-    ser_obj = serial.Serial(serial_port, serial_baurate)
-    pressing_button = rpwc.ZigbeeCommander(
-        ser_obj,
-        dest,
-        gpio,
-        rpwc.ZigbeeCommander.CMD_PARAM_HIGH)
-    releasing_button = rpwc.ZigbeeCommander(
-        ser_obj,
-        dest,
-        gpio,
-        rpwc.ZigbeeCommander.CMD_PARAM_LOW)
-
-    return (pressing_button, releasing_button)
-
-
-def push_button(interval):
-    (pressing_button, releasing_button) = get_buttons()
-
-    pressing_button.put()
-    pressing_button.wait()
-
-    time.sleep(interval)
-
-    releasing_button.put()
-    releasing_button.wait()
-
-    return [pressing_button.is_ok(), releasing_button.is_ok()]
+button_params = {
+    "serial_port": "/dev/ttyAMA0",
+    "serial_baurate": 9600,
+    "xbee_dest_addr": "0x0013A20040AFBCCE",
+    "xbee_gpio_power": "P0",
+}
 
 
 @application.route("/")
@@ -85,7 +56,12 @@ def index_api():
 
 @application.route("/api/pwoff", methods=["POST", "GET"])
 def do_power_off():
-    if False in push_button(1):
+    try:
+        res = push_button(**button_params, interval=1)
+    except (SerialException, ):
+        res = (False, )
+
+    if False in res:
         return json.dumps({"result": "Failed"})
     else:
         return json.dumps({"result": "OK"})
@@ -93,7 +69,12 @@ def do_power_off():
 
 @application.route("/api/fcpwoff", methods=["POST", "GET"])
 def do_force_power_off():
-    if False in push_button(5):
+    try:
+        res = push_button(**button_params, interval=5)
+    except (SerialException, ):
+        res = (False, )
+
+    if False in res:
         return json.dumps({"result": "Failed"})
     else:
         return json.dumps({"result": "OK"})
