@@ -117,10 +117,11 @@ def push_button(**kwargs):
         GPIO pin.
 
     args:
-        callback_to_notify_done: callable object with arguments **kwargs.
-            kwargs["frame_id_received"] and kwargs["frame_id_sent"] are
-            passed and you can check them. If callback it not set, this
-            method is called as an synchronous function.
+        serial_port: like "/dev/ttyUSB" connected to XBee of sender.
+        serial_baurate: like 9600 which is baurate for serial port.
+        xbee_dest_addr: like "0x112233445566" which is address to XBee of receiver.
+        xbee_gpio_power: like "P0" which is receiver XBee GPIO number connected to relay switch.
+        interval: interval time of push and release the remote power button with [s] unit.
 
     returns:
         [True, True] if all operation is finished successfully.
