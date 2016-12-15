@@ -22,8 +22,10 @@ import serial
 import shelve
 import time
 
-
-application = Flask("rpwc_web_application")
+application = Flask(
+    "rpwc_web_application",
+    template_folder="/var/tmp/rpwcweb/templates",
+    static_folder="/var/tmp/rpwcweb/static")
 
 
 def get_buttons(serial_port="/dev/ttyAMA0", serial_baurate=9600, dest="0x0013A20040AFBCCE", gpio="P0"):
